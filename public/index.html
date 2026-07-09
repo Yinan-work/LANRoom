@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>局域网聊天室</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 登录视图 -->
+    <div id="login-view" class="view active">
+        <div class="login-box">
+            <h1>欢迎来到聊天室</h1>
+            <p>请输入您的昵称进入大厅</p>
+            <input type="text" id="nickname-input" placeholder="例如：张三" autocomplete="off" autofocus>
+            <button id="join-btn">进入聊天室</button>
+        </div>
+    </div>
+
+    <!-- 聊天视图 -->
+    <div id="chat-view" class="view">
+        <div class="chat-header">
+            <h2>公共大厅</h2>
+            <span id="current-user-display"></span>
+            <button id="share-btn" class="header-btn" title="扫码分享聊天室">分享 🔗</button>
+        </div>
+        
+        <div id="messages-container">
+            <!-- 消息会动态插入到这里 -->
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="message-input" placeholder="输入消息..." autocomplete="off">
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+
+    <!-- 分享弹窗 (Modal) -->
+    <div id="qr-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>邀请朋友加入</h3>
+            <p>同一 WiFi 下的朋友可直接扫码：</p>
+            <div id="qrcode"></div>
+            <p class="url-text" id="share-url-text"></p>
+            <button id="close-modal-btn">关闭</button>
+        </div>
+    </div>
+
+    <!-- 引入 Socket.io 客户端脚本 -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="qrcode.min.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>

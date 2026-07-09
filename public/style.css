@@ -1,0 +1,325 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    width: 100%;
+    background-color: #ededed; /* 微信风格背景色 */
+    overflow: hidden; /* 防止整个页面滚动 */
+}
+
+/* 视图切换 */
+.view {
+    display: none;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+}
+
+.view.active {
+    display: flex;
+}
+
+/* ================= 登录视图 ================= */
+#login-view {
+    justify-content: center;
+    align-items: center;
+    background-color: #f7f7f7;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.login-box h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.login-box p {
+    color: #888;
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.login-box input:focus {
+    border-color: #07c160; /* 微信绿 */
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: #07c160;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-box button:hover {
+    background-color: #06ad56;
+}
+
+/* ================= 聊天视图 ================= */
+.chat-header {
+    background-color: #ededed;
+    padding: 15px 20px;
+    text-align: center;
+    border-bottom: 1px solid #dcdcdc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+.chat-header h2 {
+    font-size: 18px;
+    color: #111;
+    font-weight: 600;
+}
+
+#current-user-display {
+    position: absolute;
+    right: 20px;
+    font-size: 12px;
+    color: #888;
+}
+
+#messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 隐藏滚动条但保留功能 */
+#messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+#messages-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+/* 消息气泡公共样式 */
+.message-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.message-sender {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.4;
+    word-break: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* 别人发的消息 (左侧) */
+.message-left {
+    align-self: flex-start;
+}
+.message-left .message-bubble {
+    background-color: #ffffff;
+    color: #333;
+    border-top-left-radius: 2px;
+}
+
+/* 自己发的消息 (右侧) */
+.message-right {
+    align-self: flex-end;
+}
+.message-right .message-sender {
+    text-align: right;
+}
+.message-right .message-bubble {
+    background-color: #95ec69; /* 微信绿气泡 */
+    color: #111;
+    border-top-right-radius: 2px;
+}
+
+/* 系统消息 */
+.message-system {
+    align-self: center;
+    background-color: rgba(0,0,0,0.1);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    max-width: 90%;
+    text-align: center;
+}
+
+/* 底部输入区 */
+.chat-input-area {
+    background-color: #f6f6f6;
+    padding: 10px 15px;
+    border-top: 1px solid #dcdcdc;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    /* 适配 iOS 底部安全区 */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+.chat-input-area input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 16px;
+    outline: none;
+    background-color: #fff;
+}
+
+.chat-input-area button {
+    padding: 10px 20px;
+    background-color: #07c160;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-input-area button:hover {
+    background-color: #06ad56;
+}
+
+/* 移动端适配优化 */
+@media (max-width: 480px) {
+    .chat-header h2 {
+        font-size: 16px;
+    }
+    .message-bubble {
+        font-size: 15px;
+    }
+    .message-wrapper {
+        max-width: 90%;
+    }
+}
+
+/* ================= 分享功能 ================= */
+.header-btn {
+    position: absolute;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #07c160;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.header-btn:hover {
+    opacity: 0.8;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.modal-content p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+#qrcode {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.url-text {
+    font-size: 12px !important;
+    color: #999 !important;
+    word-break: break-all;
+    margin-bottom: 20px !important;
+}
+
+#close-modal-btn {
+    padding: 10px 20px;
+    background-color: #f1f1f1;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+}
+
+#close-modal-btn:hover {
+    background-color: #e1e1e1;
+}
