@@ -12,7 +12,8 @@
 * **Zero Configuration:** Start the server and you're good to go.
 * **QR Code Joining:** Automatically generates a QR code for your LAN IP, allowing friends on the same Wi-Fi to scan and join instantly on their phones.
 * **Real-time Messaging:** Lightning-fast, real-time text chatting powered by Socket.io.
-* **No Database Required:** Anonymous joining with just a nickname. Messages are broadcasted instantly and not permanently stored.
+* **Image Sharing:** Support sending images via button click, drag-and-drop, or clipboard paste. Includes automatic client-side compression for mobile devices.
+* **No Database Required:** Anonymous joining with just a nickname. Messages are broadcasted instantly. Auto-cleanup mechanism ensures image uploads never fill up your hard drive.
 
 ### Quick Start
 1. Ensure you have [Node.js](https://nodejs.org/) installed on your machine.
@@ -47,6 +48,7 @@
 * **零配置开箱即用：** 启动服务器即可开始使用。
 * **扫码极速加入：** 自动获取本机的局域网 IP 并生成二维码，同一 Wi-Fi 下的朋友用手机扫码即可直接加入。
 * **实时消息同步：** 基于 Socket.io 实现极低延迟的实时文本聊天。
+* **图片发送与管理：** 支持点击、拖拽、Ctrl+V 粘贴等多形式发图；内置移动端智能压缩，极速秒发；自动轮转清理历史图片，绝不占用硬盘空间。
 * **无痕免注册：** 无需连接数据库，输入昵称直接开聊，无历史包袱。
 
 ### 快速开始
