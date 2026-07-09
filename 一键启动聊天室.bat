@@ -1,10 +1,10 @@
 @echo off
-title 局域网聊天室服务端
+title LAN Chat Room Server
 color 0A
 cd /d "%~dp0"
 echo =======================================
-echo 正在启动局域网聊天室...
-echo 如果出现防火墙提示，请允许 Node.js 访问网络。
+echo Starting LAN Chat Room...
+echo Please allow Node.js if Windows Firewall prompts.
 echo =======================================
 node server.js
 pause
