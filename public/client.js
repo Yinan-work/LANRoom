@@ -66,13 +66,11 @@ if (currentNickname) {
 function sendMessage() {
     const msgText = messageInput.value.trim();
     if (msgText) {
-        // 发送给服务器
-        socket.emit('chat message', msgText);
+        const payload = { type: 'text', content: msgText };
+        socket.emit('chat message', payload);
         
-        // 立即在本地显示自己发的消息（右侧）
-        appendMessage(currentNickname, msgText, 'right');
+        appendMessage(currentNickname, payload, 'right');
         
-        // 清空输入框
         messageInput.value = '';
         messageInput.focus();
     }
@@ -85,7 +83,12 @@ messageInput.addEventListener('keypress', (e) => {
 
 // 接收别人的消息
 socket.on('chat message', (data) => {
-    appendMessage(data.user, data.text, 'left');
+    // 兼容旧的文本消息
+    if (typeof data.text === 'string' && !data.type) {
+        appendMessage(data.user, { type: 'text', content: data.text }, 'left');
+    } else {
+        appendMessage(data.user, data, 'left');
+    }
 });
 
 // 接收系统消息 (如：加入、离开)
@@ -96,19 +99,28 @@ socket.on('system message', (msg) => {
 // ---------------- UI 渲染逻辑 ----------------
 
 // 添加普通消息到界面
-function appendMessage(sender, text, side) {
+function appendMessage(sender, data, side) {
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', `message-${side}`);
     
-    // 如果是别人发的消息，显示发送者名字
     let senderHtml = '';
     if (side === 'left') {
         senderHtml = `<div class="message-sender">${sender}</div>`;
     }
     
+    let contentHtml = '';
+    // 兼容遗留的直接传 string 的情况
+    if (typeof data === 'string') {
+        contentHtml = escapeHTML(data);
+    } else if (data.type === 'text') {
+        contentHtml = escapeHTML(data.content);
+    } else if (data.type === 'image') {
+        contentHtml = `<img src="${data.content}" alt="图片" onclick="window.open(this.src, '_blank')">`;
+    }
+    
     wrapper.innerHTML = `
         ${senderHtml}
-        <div class="message-bubble">${escapeHTML(text)}</div>
+        <div class="message-bubble">${contentHtml}</div>
     `;
     
     messagesContainer.appendChild(wrapper);
@@ -184,3 +196,121 @@ qrModal.addEventListener('click', (e) => {
         qrModal.classList.remove('active');
     }
 });
+
+// ---------------- 图片发送逻辑 ----------------
+
+const imageInput = document.getElementById('image-input');
+const originalCheckbox = document.getElementById('original-image-checkbox');
+
+// 1. 点击按钮选择图片
+imageInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        await handleImageUpload(file);
+    }
+    imageInput.value = ''; // 重置 input
+});
+
+// 2. 拖拽图片到页面
+document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+});
+document.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    if (!chatView.classList.contains('active')) return;
+    
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        await handleImageUpload(file);
+    }
+});
+
+// 3. 粘贴图片 (Ctrl+V)
+document.addEventListener('paste', async (e) => {
+    if (!chatView.classList.contains('active')) return;
+    
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+            const file = item.getAsFile();
+            await handleImageUpload(file);
+        }
+    }
+});
+
+// 核心上传处理函数
+async function handleImageUpload(file) {
+    let finalFile = file;
+    
+    // 如果没勾选“原图”，就进行前端压缩
+    if (!originalCheckbox.checked) {
+        try {
+            finalFile = await compressImage(file);
+        } catch (err) {
+            console.error("图片压缩失败，将发送原图", err);
+        }
+    }
+    
+    const formData = new FormData();
+    formData.append('image', finalFile, file.name || 'image.png');
+    
+    try {
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        if (data.url) {
+            // 上传成功后通过 WebSocket 发送图片 URL
+            const payload = { type: 'image', content: data.url };
+            socket.emit('chat message', payload);
+            
+            // 立即在本地显示
+            appendMessage(currentNickname, payload, 'right');
+            scrollToBottom();
+        }
+    } catch (err) {
+        alert('图片上传失败！');
+        console.error(err);
+    }
+}
+
+// 图片压缩函数
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 限制最大宽度 1920，等比例缩放
+                const MAX_WIDTH = 1920;
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > MAX_WIDTH) {
+                    height = Math.round((height * MAX_WIDTH) / width);
+                    width = MAX_WIDTH;
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // 压缩成 JPEG，质量 0.7
+                canvas.toBlob((blob) => {
+                    resolve(new File([blob], file.name || 'compressed.jpg', { type: 'image/jpeg', lastModified: Date.now() }));
+                }, 'image/jpeg', 0.7);
+            };
+            img.onerror = (error) => reject(error);
+        };
+        reader.onerror = (error) => reject(error);
+    });
+}
+

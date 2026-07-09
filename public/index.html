@@ -30,7 +30,14 @@
         </div>
 
         <div class="chat-input-area">
-            <input type="text" id="message-input" placeholder="输入消息..." autocomplete="off">
+            <div class="image-upload-wrapper">
+                <label for="image-input" id="image-upload-btn" title="发送图片">🖼️</label>
+                <input type="file" id="image-input" accept="image/*" style="display: none;">
+                <label class="original-checkbox-label" title="发送未经压缩的高清原图">
+                    <input type="checkbox" id="original-image-checkbox"> 原图
+                </label>
+            </div>
+            <input type="text" id="message-input" placeholder="输入消息... (支持粘贴/拖拽图片)" autocomplete="off">
             <button id="send-btn">发送</button>
         </div>
     </div>

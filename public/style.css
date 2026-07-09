@@ -190,40 +190,83 @@ body, html {
 
 /* 底部输入区 */
 .chat-input-area {
-    background-color: #f6f6f6;
-    padding: 10px 15px;
-    border-top: 1px solid #dcdcdc;
+    padding: 15px;
+    background-color: white;
+    border-top: 1px solid #eee;
     display: flex;
     gap: 10px;
     align-items: center;
-    /* 适配 iOS 底部安全区 */
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
 }
 
-.chat-input-area input {
+.image-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#image-upload-btn {
+    font-size: 24px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#image-upload-btn:hover {
+    transform: scale(1.1);
+}
+
+.original-checkbox-label {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.original-checkbox-label input {
+    margin-right: 4px;
+}
+
+#message-input {
     flex: 1;
     padding: 10px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 20px;
-    font-size: 16px;
     outline: none;
-    background-color: #fff;
+    font-size: 14px;
+    transition: border-color 0.3s;
 }
 
-.chat-input-area button {
+#message-input:focus {
+    border-color: #007aff;
+}
+
+#send-btn {
     padding: 10px 20px;
-    background-color: #07c160;
+    background-color: #007aff;
     color: white;
     border: none;
     border-radius: 20px;
-    font-size: 16px;
-    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    font-size: 14px;
+    transition: background-color 0.3s;
 }
 
-.chat-input-area button:hover {
-    background-color: #06ad56;
+#send-btn:hover {
+    background-color: #005bb5;
+}
+
+.message-bubble img {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 8px;
+    cursor: zoom-in;
+    display: block;
+    object-fit: contain;
 }
 
 /* 移动端适配优化 */
