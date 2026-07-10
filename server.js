@@ -80,9 +80,20 @@ app.get('/api/config', (req, res) => {
     });
 });
 
+// 保存最近的聊天记录，用于断线重连或新用户加入时同步
+const MAX_HISTORY = 200;
+let messageHistory = [];
+
 // WebSocket 逻辑
 io.on('connection', (socket) => {
     let currentUser = '匿名用户';
+
+    // 监听历史消息同步请求
+    socket.on('sync history', (callback) => {
+        if (typeof callback === 'function') {
+            callback(messageHistory);
+        }
+    });
 
     // 监听用户加入
     socket.on('user joined', (nickname) => {
@@ -97,11 +108,24 @@ io.on('connection', (socket) => {
             data = { type: 'text', content: data };
         }
         
-        // 向除自己外的其他人广播
-        socket.broadcast.emit('chat message', {
+        const msgObj = {
             user: currentUser,
             ...data
-        });
+        };
+        
+        // 确保每条消息都有唯一 ID
+        if (!msgObj.id) {
+            msgObj.id = Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        // 存入历史记录
+        messageHistory.push(msgObj);
+        if (messageHistory.length > MAX_HISTORY) {
+            messageHistory.shift();
+        }
+
+        // 向除自己外的其他人广播
+        socket.broadcast.emit('chat message', msgObj);
     });
 
     // 监听用户断开连接

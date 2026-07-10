@@ -1,5 +1,13 @@
 const socket = io();
 
+// 生成唯一ID
+function generateId() {
+    return Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+}
+
+// 记录已处理的消息ID，防止重复渲染
+const processedMsgIds = new Set();
+
 // DOM 元素
 const loginView = document.getElementById('login-view');
 const chatView = document.getElementById('chat-view');
@@ -27,6 +35,7 @@ function enterChatRoom(nickname) {
     // 如果当前处于连接状态，立即通知服务器
     if (socket.connected) {
         socket.emit('user joined', nickname);
+        syncHistory();
     }
     
     // 聚焦输入框
@@ -52,8 +61,20 @@ socket.on('connect', () => {
     // 无论是首次连接，还是手机锁屏唤醒后的重新连接，只要有昵称就重新注册
     if (currentNickname) {
         socket.emit('user joined', currentNickname);
+        syncHistory();
     }
 });
+
+function syncHistory() {
+    socket.emit('sync history', (history) => {
+        if (Array.isArray(history)) {
+            history.forEach(msg => {
+                const side = msg.user === currentNickname ? 'right' : 'left';
+                appendMessage(msg.user, msg, side);
+            });
+        }
+    });
+}
 
 // 页面加载时自动恢复登录状态
 if (currentNickname) {
@@ -66,7 +87,7 @@ if (currentNickname) {
 function sendMessage() {
     const msgText = messageInput.value.trim();
     if (msgText) {
-        const payload = { type: 'text', content: msgText };
+        const payload = { id: generateId(), type: 'text', content: msgText };
         socket.emit('chat message', payload);
         
         appendMessage(currentNickname, payload, 'right');
@@ -100,6 +121,11 @@ socket.on('system message', (msg) => {
 
 // 添加普通消息到界面
 function appendMessage(sender, data, side) {
+    if (data && data.id) {
+        if (processedMsgIds.has(data.id)) return;
+        processedMsgIds.add(data.id);
+    }
+
     const wrapper = document.createElement('div');
     wrapper.classList.add('message-wrapper', `message-${side}`);
     
@@ -264,7 +290,7 @@ async function handleImageUpload(file) {
         
         if (data.url) {
             // 上传成功后通过 WebSocket 发送图片 URL
-            const payload = { type: 'image', content: data.url };
+            const payload = { id: generateId(), type: 'image', content: data.url };
             socket.emit('chat message', payload);
             
             // 立即在本地显示
