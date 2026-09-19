@@ -11,6 +11,7 @@
 ### Features
 * **Zero Configuration:** Start the server and you're good to go.
 * **QR Code Joining:** Automatically generates a QR code for your LAN IP, allowing friends on the same Wi-Fi to scan and join instantly on their phones.
+* **Smart Network Adapter Detection:** Automatically prioritizes physical Wi-Fi/Ethernet adapters over virtual/VPN interfaces (e.g. WSL, VMware, Mihomo, Clash). Supports interactive switching via `npm run select-ip` or `选择网卡启动.bat`.
 * **Real-time Messaging:** Lightning-fast, real-time text chatting powered by Socket.io.
 * **Image Sharing:** Support sending images via button click, drag-and-drop, or clipboard paste. Includes automatic client-side compression for mobile devices.
 * **Background Sync:** Automatically recovers missed messages when returning from the background on mobile devices, ensuring a seamless chat experience.
@@ -30,8 +31,8 @@
    ```bash
    npm start
    ```
-   *(Alternatively, on Windows, you can double-click `一键启动聊天室.bat`)*
-5. The terminal will display your LAN access address (e.g., `http://192.168.x.x:3000`). Share this link with your friends, or have them scan the QR code within the app to join!
+   *(Alternatively, on Windows, you can double-click `一键启动聊天室.bat`. If you have multiple network cards and wish to pick manually, use `选择网卡启动.bat` or `npm run select-ip`)*
+5. The terminal will display your LAN access address (e.g., `http://192.168.x.x:3433`). Share this link with your friends, or have them scan the QR code within the app to join!
 
 ### Tech Stack
 * Node.js
@@ -48,6 +49,7 @@
 ### 核心功能
 * **零配置开箱即用：** 启动服务器即可开始使用。
 * **扫码极速加入：** 自动获取本机的局域网 IP 并生成二维码，同一 Wi-Fi 下的朋友用手机扫码即可直接加入。
+* **多网卡智能识别与切换：** 自动识别并优先选择物理 Wi-Fi / 以太网卡，智能排除 WSL、VMware、Mihomo、Clash 等虚拟网卡；支持通过 `选择网卡启动.bat` 或 `npm run select-ip` 交互式切换并持久化记忆。
 * **实时消息同步：** 基于 Socket.io 实现极低延迟的实时文本聊天。
 * **图片发送与管理：** 支持点击、拖拽、Ctrl+V 粘贴等多形式发图；内置移动端智能压缩，极速秒发；自动轮转清理历史图片，绝不占用硬盘空间。
 * **断线重连同步：** 移动端切后台导致断网后，返回前台可自动无缝同步错过的历史消息，不错过任何精彩细节。
@@ -67,8 +69,8 @@
    ```bash
    npm start
    ```
-   *（如果您是 Windows 用户，也可以直接双击目录下的 `一键启动聊天室.bat` 脚本快速启动）*
-5. 控制台会打印出您的【局域网访问地址】（例如：`http://192.168.x.x:3000`），将这个地址发给朋友，或者让他们直接扫描聊天室页面右上角的“分享”二维码即可！
+   *（Windows 用户可直接双击 `一键启动聊天室.bat` 极速启动。如需手动指定/切换其他网卡，请双击 `选择网卡启动.bat` 或运行 `npm run select-ip`）*
+5. 控制台会打印出您的【局域网访问地址】（例如：`http://192.168.x.x:3433`），将这个地址发给朋友，或者让他们直接扫描聊天室页面右上角的“分享”二维码即可！
 
 ### 技术栈
 * Node.js

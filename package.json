@@ -4,7 +4,8 @@
   "description": "局域网极简聊天室",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "select-ip": "node server.js --select"
   },
   "dependencies": {
     "express": "^4.19.0",

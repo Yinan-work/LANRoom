@@ -46,10 +46,21 @@
     <div id="qr-modal" class="modal-overlay">
         <div class="modal-content">
             <h3>邀请朋友加入</h3>
-            <p>同一 WiFi 下的朋友可直接扫码：</p>
+            <p class="modal-tip">同一 WiFi 下的朋友可直接扫码或访问：</p>
+
+            <!-- 网卡选择器 -->
+            <div id="interface-select-box" class="interface-select-box" style="display: none;">
+                <label for="interface-select">网卡：</label>
+                <select id="interface-select"></select>
+            </div>
+
             <div id="qrcode"></div>
             <p class="url-text" id="share-url-text"></p>
-            <button id="close-modal-btn">关闭</button>
+
+            <div class="modal-btn-group">
+                <button id="copy-url-btn" class="copy-btn">📋 复制链接</button>
+                <button id="close-modal-btn" class="close-btn">关闭</button>
+            </div>
         </div>
     </div>
 

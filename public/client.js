@@ -181,35 +181,132 @@ const qrModal = document.getElementById('qr-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const qrcodeContainer = document.getElementById('qrcode');
 const shareUrlText = document.getElementById('share-url-text');
-let qrCodeGenerated = false;
-let lanUrl = '';
+const interfaceSelectBox = document.getElementById('interface-select-box');
+const interfaceSelect = document.getElementById('interface-select');
+const copyUrlBtn = document.getElementById('copy-url-btn');
 
-// 获取局域网配置
+let qrcodeInstance = null;
+let currentShareUrl = '';
+let serverConfig = null;
+
+// 初始化获取局域网配置
 fetch('/api/config')
     .then(res => res.json())
     .then(data => {
-        lanUrl = data.url;
-        shareUrlText.textContent = lanUrl;
+        serverConfig = data;
+        setupInterfaceSelector(data);
     })
-    .catch(err => console.error('获取局域网配置失败:', err));
+    .catch(err => {
+        console.error('获取局域网配置失败:', err);
+        // 如果后端接口失败，回退使用当前浏览器的地址
+        currentShareUrl = window.location.origin;
+        shareUrlText.textContent = currentShareUrl;
+    });
+
+// 配置网卡下拉菜单
+function setupInterfaceSelector(config) {
+    const interfaces = config.interfaces || [];
+    const port = config.port || window.location.port || 3433;
+    const currentHost = window.location.hostname;
+    const isCurrentHostIp = currentHost !== 'localhost' && currentHost !== '127.0.0.1' && /\d+\.\d+\.\d+\.\d+/.test(currentHost);
+
+    // 默认分享 URL：如果当前就是通过具体的局域网 IP 访问，优先用当前 host
+    if (isCurrentHostIp) {
+        currentShareUrl = window.location.origin;
+    } else {
+        currentShareUrl = config.url || `http://${config.ip}:${port}`;
+    }
+    shareUrlText.textContent = currentShareUrl;
+
+    // 如果有多个网卡，展示下拉框供切换
+    if (interfaces.length > 1 && interfaceSelectBox && interfaceSelect) {
+        interfaceSelect.innerHTML = '';
+        interfaces.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = `http://${item.address}:${port}`;
+            opt.dataset.ip = item.address;
+            opt.dataset.name = item.name;
+            opt.textContent = `${item.name} (${item.address})`;
+
+            // 匹配默认选中项
+            if (isCurrentHostIp && item.address === currentHost) {
+                opt.selected = true;
+            } else if (!isCurrentHostIp && (item.address === config.ip || item.isCurrent)) {
+                opt.selected = true;
+            }
+            interfaceSelect.appendChild(opt);
+        });
+        interfaceSelectBox.style.display = 'flex';
+
+        // 监听网卡切换
+        interfaceSelect.addEventListener('change', () => {
+            const selectedOpt = interfaceSelect.options[interfaceSelect.selectedIndex];
+            currentShareUrl = interfaceSelect.value;
+            shareUrlText.textContent = currentShareUrl;
+            renderQrCode(currentShareUrl);
+
+            // 通知服务端记住此选择
+            if (selectedOpt && selectedOpt.dataset.ip) {
+                fetch('/api/select-interface', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip: selectedOpt.dataset.ip, name: selectedOpt.dataset.name })
+                }).catch(() => {});
+            }
+        });
+    }
+}
+
+// 渲染或更新二维码
+function renderQrCode(url) {
+    if (!url) return;
+    if (!qrcodeInstance) {
+        qrcodeContainer.innerHTML = '';
+        qrcodeInstance = new QRCode(qrcodeContainer, {
+            text: url,
+            width: 190,
+            height: 190,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } else {
+        qrcodeInstance.clear();
+        qrcodeInstance.makeCode(url);
+    }
+}
 
 // 打开分享弹窗
 shareBtn.addEventListener('click', () => {
     qrModal.classList.add('active');
-    
-    // 只在第一次打开时生成二维码
-    if (!qrCodeGenerated && lanUrl) {
-        new QRCode(qrcodeContainer, {
-            text: lanUrl,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-        qrCodeGenerated = true;
-    }
+    renderQrCode(currentShareUrl);
 });
+
+// 复制链接
+if (copyUrlBtn) {
+    copyUrlBtn.addEventListener('click', async () => {
+        if (!currentShareUrl) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(currentShareUrl);
+            } else {
+                const tempInput = document.createElement('input');
+                tempInput.value = currentShareUrl;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            }
+            const originalText = copyUrlBtn.textContent;
+            copyUrlBtn.textContent = ' 已复制！';
+            setTimeout(() => {
+                copyUrlBtn.textContent = originalText;
+            }, 1500);
+        } catch (err) {
+            alert('复制失败，请手动长按复制下方链接');
+        }
+    });
+}
 
 // 关闭弹窗
 closeModalBtn.addEventListener('click', () => {
